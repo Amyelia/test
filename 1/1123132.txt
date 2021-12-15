@@ -1,0 +1,37 @@
+4.1)select a.name
+from   employee a, employee b
+where  a.department_id = b.chief_id
+and    a.salary < b.salary
+
+4.2) select name
+from   employee a
+where  a.salary = ( select min(salary) from employee b
+                    where  b.department_id = a.department_id )
+
+4.3) select department_id
+from   employee
+group  by department_id
+having count(*) <= 3
+
+4.5) with sum_salary as
+(select department_id, sum(salary) salary
+from employee
+group by department_id)
+select department_id
+from sum_salary a       
+where a.salary = ( select max(salary) from sum_salary )
+
+4.6) select sum(salary) from employee
+
+5)declare @percent int = 23
+declare @deparment_id int = 2
+select e.*, 
+case when CHIEF_ID is null then e.salary+(e.salary*(@percent/100.00)) 
+     else 
+      case when e.salary<(select top 1 e.salary+e.salary*(@percent/100.00) from EMPLOYEE e where e.Department_Id = @deparment_id and CHIEF_ID is null order by e.Salary desc ) 
+           then (select top 1 e.salary+e.salary*(@percent/100.00) from EMPLOYEE e where e.Department_Id = @deparment_id and CHIEF_ID is null order by e.Salary desc )
+           else e.salary
+           end
+end
+from EMPLOYEE e
+where e.Department_Id = @deparment_id
